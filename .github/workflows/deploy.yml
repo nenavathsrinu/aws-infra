@@ -1,33 +1,40 @@
-name: Deploy vpc
+name: Deploy VPC
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'vpc/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options:
+          - dev
+          - prod
+
 permissions:
-  contents: read
   id-token: write
+  contents: read
+
 jobs:
-  deploy-vpc:
-    runs-on: ubuntu-ltest
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: configure aws credentials
-      uses: aws-actions/configure-aws-credentials@v2
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        aws-region: ap-south-1
-    - name: setup teraform
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
-    - name: terraform init
-      working-directory: ./vpc
+
+    - name: Terraform Init
       run: terraform init
-    - name: terraform apply
-      working-directory: ./vpc  
-      run: terraform apply -auto-approve
-      
+      working-directory: infra/vpc
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve \
+        -var-file=${{ inputs.environment }}.tfvars
+      working-directory: infra/vpc
