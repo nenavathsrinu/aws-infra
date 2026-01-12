@@ -1,0 +1,33 @@
+name: Deploy vpc
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'vpc/**'
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  deploy-vpc:
+    runs-on: ubuntu-ltest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-region: ap-south-1
+    - name: setup teraform
+      uses: hashicorp/setup-terraform@v3
+    - name: terraform init
+      working-directory: ./vpc
+      run: terraform init
+    - name: terraform apply
+      working-directory: ./vpc  
+      run: terraform apply -auto-approve
+      
