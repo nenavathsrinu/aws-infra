@@ -9,6 +9,12 @@ on:
           - dev
           - prod
 
+  push:
+    branches:
+      - main
+    paths:
+      - "aws-infra/**"
+
 permissions:
   id-token: write
   contents: read
@@ -16,10 +22,11 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment || 'dev' }}
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -31,10 +38,10 @@ jobs:
       uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Init
-      run: terraform init
       working-directory: infra/vpc
+      run: terraform init
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve \
-        -var-file=${{ inputs.environment }}.tfvars
       working-directory: infra/vpc
+      run: terraform apply -auto-approve \
+        -var-file=${{ inputs.environment || 'dev' }}.tfvars
