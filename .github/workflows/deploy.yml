@@ -8,6 +8,7 @@ on:
         options:
           - dev
           - prod
+
 permissions:
   id-token: write
   contents: read
@@ -15,7 +16,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'dev' }}
+    environment: ${{ inputs.environment }}
 
     steps:
     - name: Checkout code
@@ -31,10 +32,8 @@ jobs:
       uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Init
-      working-directory: infra/vpc
       run: terraform init
 
     - name: Terraform Apply
-      working-directory: infra/vpc
       run: terraform apply -auto-approve \
-        -var-file=${{ inputs.environment || 'dev' }}.tfvars
+        -var-file=${{ inputs.environment }}.tfvars
