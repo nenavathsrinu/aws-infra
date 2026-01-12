@@ -8,13 +8,6 @@ on:
         options:
           - dev
           - prod
-
-  push:
-    branches:
-      - main
-    paths:
-      - "aws-infra/**"
-
 permissions:
   id-token: write
   contents: read
