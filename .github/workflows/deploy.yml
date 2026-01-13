@@ -4,10 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       environment:
+        description: 'Select environment'
+        required: true
         type: choice
         options:
           - dev
           - prod
+      destroy:
+        description: 'Set to true to destroy resources'
+        required: false
+        default: 'false'
+        type: boolean
 
 permissions:
   id-token: write
@@ -19,21 +26,41 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      # Configure AWS credentials via OIDC role
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-    - name: Terraform Init
-      run: terraform init
+      # Initialize Terraform with backend config
+      - name: Terraform Init
+        run: terraform init \
+          -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+          -backend-config="key=terraform/${{ inputs.environment }}.tfstate" \
+          -backend-config="region=${{ secrets.AWS_REGION }}" \
+          -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}" \
+          -backend-config="encrypt=true"
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve -var-file=${{ inputs.environment }}.tfvars
+      # Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -var-file=${{ inputs.environment }}.tfvars
 
+      # Terraform Apply or Destroy
+      - name: Terraform Apply/Destroy
+        run: |
+          if [ "${{ inputs.destroy }}" = "true" ]; then
+            echo "Destroying resources..."
+            terraform destroy -auto-approve -var-file=${{ inputs.environment }}.tfvars
+          else
+            echo "Applying resources..."
+            terraform apply -auto-approve -var-file=${{ inputs.environment }}.tfvars
+          fi
