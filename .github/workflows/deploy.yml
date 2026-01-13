@@ -33,6 +33,8 @@ jobs:
         run: |
           echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
           echo "GITHUB_REF=$GITHUB_REF"
+      - name: Verify AWS identity
+         run: aws sts get-caller-identity
 
       # Configure AWS credentials via OIDC role
       - name: Configure AWS Credentials
@@ -51,6 +53,8 @@ jobs:
         env:
           TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+
+          
 
       # Terraform Init
       - name: Terraform Init
