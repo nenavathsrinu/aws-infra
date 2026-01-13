@@ -3,7 +3,7 @@ terraform {
     bucket         = "eks-prod-dev-tf-state"
     key            = "terraform/dev.tfstate"  # path inside the bucket
     region         = "ap-south-1"
-    use_lockfile = "eks-prod-dev-tf-lock"
+    use_lockfile   = "true"
     encrypt        = true
   }
 }
