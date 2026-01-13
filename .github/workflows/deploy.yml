@@ -29,6 +29,10 @@ jobs:
       # Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Debug OIDC
+        run: |
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+          echo "GITHUB_REF=$GITHUB_REF"
 
       # Configure AWS credentials via OIDC role
       - name: Configure AWS Credentials
