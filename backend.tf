@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "eks-prod-dev-tf-state"
+    bucket         = "terraform-incedo-autmoation-lock"
     key            = "terraform/dev.tfstate"  # path inside the bucket
     region         = "ap-south-1"
     use_lockfile   = true
