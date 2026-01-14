@@ -44,12 +44,6 @@ jobs:
           echo "AWS_REGION: '${{ secrets.AWS_REGION }}'"
           echo "ENVIRONMENT: '${{ inputs.environment }}'"
 
-          - name: Cleanup Terraform cache
-            run: |
-            rm -rf .terraform
-            rm -f .terraform.lock.hcl
-
-
       - name: Terraform Init (Reconfigure Backend)
         run: |
           terraform init -reconfigure \
