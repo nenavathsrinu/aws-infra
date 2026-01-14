@@ -9,3 +9,11 @@ variable "vpc_name" {
 variable "vpc_cidr" {
   default = "10.0.0.0/16"
 }
+
+variable "infra_region" {
+  type = string
+}
+
+variable "target_account_role" {
+  type = string
+}
