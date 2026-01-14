@@ -37,13 +37,7 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-
-      - name: Debug backend values
-        run: |
-          echo "TF_STATE_BUCKET: '${{ secrets.TF_STATE_BUCKET }}'"
-          echo "AWS_REGION: '${{ secrets.AWS_REGION }}'"
-          echo "ENVIRONMENT: '${{ inputs.environment }}'"
-
+        
       - name: Terraform Init (Reconfigure Backend)
         run: |
           terraform init -reconfigure \
