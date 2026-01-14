@@ -13,6 +13,14 @@ provider "aws" {
   region = var.region
 }
 
+provider "aws" {
+  region = var.infra_region
+
+  assume_role {
+    role_arn = var.target_account_role
+  }
+}
+
 data "aws_availability_zones" "available" {}
 
 resource "aws_vpc" "this" {
