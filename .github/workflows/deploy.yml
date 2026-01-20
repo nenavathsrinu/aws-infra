@@ -4,7 +4,7 @@ on:
   push: 
     branches: 
        - main
-       - incedo-infra
+       - dev
   workflow_dispatch:
     inputs:
       environment:
@@ -12,7 +12,7 @@ on:
         required: true
         type: choice
         options:
-          - dev
+          - incedo-infra
           - prod
       destroy:
         description: 'Set to true to destroy resources'
