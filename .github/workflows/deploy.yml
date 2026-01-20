@@ -1,21 +1,22 @@
 name: Deploy VPC
 
 on:
-  push: 
-    branches: 
-       - main
-       - dev
+  push:
+    branches:
+      - main
+      - dev
+
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Select environment'
+        description: Select environment
         required: true
         type: choice
         options:
           - incedo-infra
           - prod
       destroy:
-        description: 'Set to true to destroy resources'
+        description: Destroy resources
         required: false
         default: false
         type: boolean
@@ -27,7 +28,14 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+
+    # 🔑 Environment resolution (push + manual)
+    environment: >
+      ${{
+        github.event_name == 'workflow_dispatch' && inputs.environment ||
+        github.ref == 'refs/heads/main' && 'prod' ||
+        github.ref == 'refs/heads/dev' && 'incedo-infra'
+      }}
 
     steps:
       - name: Checkout code
@@ -37,26 +45,26 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        
-      - name: Terraform Init (Reconfigure Backend)
+
+      - name: Terraform Init
         run: |
           terraform init -reconfigure \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=terraform/${{ inputs.environment }}.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="key=terraform/${{ github.environment }}.tfstate" \
+            -backend-config="region=${{ vars.AWS_REGION }}" \
             -backend-config="encrypt=true"
 
       - name: Terraform Plan
-        run: terraform plan -var-file=${{ inputs.environment }}.tfvars
+        run: terraform plan -var-file=${{ github.environment }}.tfvars
 
-      - name: Terraform Apply/Destroy
+      - name: Terraform Apply / Destroy
         run: |
-          if [ "${{ inputs.destroy }}" = "true" ]; then
-            terraform destroy -auto-approve -var-file=${{ inputs.environment }}.tfvars
+          if [ "${{ github.event.inputs.destroy }}" = "true" ]; then
+            terraform destroy -auto-approve -var-file=${{ github.environment }}.tfvars
           else
-            terraform apply -auto-approve -var-file=${{ inputs.environment }}.tfvars
+            terraform apply -auto-approve -var-file=${{ github.environment }}.tfvars
           fi
