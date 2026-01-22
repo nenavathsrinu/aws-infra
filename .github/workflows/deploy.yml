@@ -42,7 +42,7 @@ jobs:
           terraform init -reconfigure \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="key=terraform/incedo-infra.tfstate" \
-            -backend-config="region=${AWS_REGION}"
+            -backend-config="region=ap-south-1"
 
       - run: terraform plan -var-file=incedo-infra.tfvars
       - run: terraform apply -auto-approve -var-file=incedo-infra.tfvars
@@ -71,7 +71,7 @@ jobs:
           terraform init -reconfigure \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="key=terraform/nttdata-infra.tfstate" \
-            -backend-config="region=${AWS_REGION}"
+            -backend-config="region=us-west-2"
 
       - run: terraform plan -var-file=nttdata-infra.tfvars
       - run: terraform apply -auto-approve -var-file=nttdata-infra.tfvars
