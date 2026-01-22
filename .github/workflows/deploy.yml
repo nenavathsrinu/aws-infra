@@ -30,16 +30,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
       - uses: hashicorp/setup-terraform@v3
+
       - name: Terraform Init
-  run: |
-    terraform init -reconfigure \
-      -backend-config="bucket=***" \
-      -backend-config="key=terraform/nttdata-infra.tfstate" \
-      -backend-config="region=${AWS_REGION}"
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="key=terraform/incedo-infra.tfstate" \
+            -backend-config="region=${AWS_REGION}"
 
       - run: terraform plan -var-file=incedo-infra.tfvars
       - run: terraform apply -auto-approve -var-file=incedo-infra.tfvars
@@ -56,13 +59,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
       - uses: hashicorp/setup-terraform@v3
-      - run: terraform init -reconfigure \
-          -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-          -backend-config="key=nttdata/nttdata-infra.tfstate" \
-          -backend-config="region=${AWS_REGION}"
+
+      - name: Terraform Init
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="key=terraform/nttdata-infra.tfstate" \
+            -backend-config="region=${AWS_REGION}"
+
       - run: terraform plan -var-file=nttdata-infra.tfvars
       - run: terraform apply -auto-approve -var-file=nttdata-infra.tfvars
